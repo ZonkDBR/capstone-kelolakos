@@ -11,19 +11,18 @@ class Sewa extends Model
 
     protected $table = 'sewa';
     protected $primaryKey = 'id_sewa';
-    protected $fillable = 
-    [
-        'id_kamar', 
-        'id_penghuni', 
-        'tanggal_sewa', 
-        'tanggal_selesai', 
-        'status'
+    protected $fillable = [
+        'id_penghuni',
+        'id_kamar',
+        'tanggal_sewa',
+        'tanggal_selesai',
+        'status',
+        'status_pembayaran' // Add this line
     ];
 
-    protected $casts =
-    [
+    protected $casts = [
         'tanggal_sewa' => 'date',
-        'tanggal_kembali' => 'date'
+        'tanggal_selesai' => 'date'
     ];
 
     public function penghuni()

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('tanggal_sewa');
             $table->date('tanggal_selesai')->nullable();
             $table->enum('status', ['Aktif', 'Berahkir'])->default('Aktif');
+            $table->string('status_pembayaran')->default('Belum');
             $table->timestamps();
         });
     }

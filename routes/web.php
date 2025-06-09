@@ -15,6 +15,7 @@ use App\Http\Controllers\SwitchLocationController;
 use App\Http\Controllers\User\PembayaranController;
 use App\Http\Controllers\User\ProfileController as UserProfileController;
 use App\Http\Controllers\User\DashboardController as UserDashboardController;
+use App\Http\Controllers\TagihanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/transaksi/{id}/edit', [TransaksiController::class, 'edit'])->name('transaksi.edit');
     Route::put('/transaksi/{id}', [TransaksiController::class, 'update'])->name('transaksi.update');
     Route::delete('/transaksi/{id}', [TransaksiController::class, 'destroy'])->name('transaksi.destroy');
+
+    // Routes for tagihan
+    Route::get('/tagihan', [TagihanController::class, 'index'])->name('tagihan.index');
+    Route::get('/tagihan/create/{id_sewa}', [TagihanController::class, 'create'])->name('tagihan.create');
+    Route::post('/tagihan', [TagihanController::class, 'store'])->name('tagihan.store');
 
 
     Route::post('/switch-location', [SwitchLocationController::class, 'switchLocation'])

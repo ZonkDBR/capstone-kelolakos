@@ -9,16 +9,18 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->id('id_pembayaran');
-            $table->foreignId('id_sewa')->constrained('sewa', 'id_sewa')->onDelete('cascade');
+            $table->foreignId('id_sewa');
             $table->date('tanggal_bayar');
             $table->decimal('nominal', 10, 2);
             $table->string('periode_bayar', 20);
+            $table->string('metode_pembayaran');
             $table->enum('status', ['Lunas', 'Belum Lunas'])->default('Belum Lunas');
-            $table->foreignId('id_transaksi')->nullable()->constrained('transaksi', 'id_transaksi');
+            $table->text('keterangan')->nullable();
+            $table->foreignId('id_transaksi')->nullable();
             $table->timestamps();
         });
     }

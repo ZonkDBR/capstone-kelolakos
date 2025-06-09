@@ -18,7 +18,9 @@ class PembayaranSeeder extends Seeder
                 'tanggal_bayar' => '2025-01-01',
                 'nominal' => 700000.00,
                 'periode_bayar' => 'Januari 2025',
+                'metode_pembayaran' => 'Tunai',
                 'status' => 'Lunas',
+                'keterangan' => 'Pembayaran Januari 2025',
                 'id_transaksi' => null,
             ],
         ]);
