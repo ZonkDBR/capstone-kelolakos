@@ -6,8 +6,12 @@ use App\Models\Transaksi;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class TransaksiController extends Controller
 {
@@ -24,13 +28,19 @@ class TransaksiController extends Controller
     public function laporan(Request $request)
     {
         $currentLocationId = session('current_location_id');
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
         $transaksi = Transaksi::where('id_lokasi', $currentLocationId);
+        $from = $request->input('from', $currentMonth);
+        $to = $request->input('to', $currentMonth);
 
-        if ($request->has('from') && $request->from != '') {
-            $transaksi->whereDate('tanggal', '>=', $request->from . '-01');
+        if ($from != '') {
+            $startDate = Carbon::createFromFormat('Y-m', $from)->startOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '>=', $startDate);
         }
-        if ($request->has('to') && $request->to != '') {
-            $transaksi->whereDate('tanggal', '<=', $request->to . '-31');
+        if ($to != '') {
+            $endDate = Carbon::createFromFormat('Y-m', $to)->endOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '<=', $endDate);
         }
         $transaksi = $transaksi->with('lokasiKos')->get();
 
@@ -38,37 +48,51 @@ class TransaksiController extends Controller
         $totalPengeluaran = $transaksi->where('jenis', 'Pengeluaran')->sum('nominal');
         $totalSaldo = $totalPemasukan - $totalPengeluaran;
 
-        return view('transaksi.laporan', compact('transaksi', 'totalPemasukan', 'totalPengeluaran', 'totalSaldo'));
+        return view('transaksi.laporan', compact('transaksi', 'totalPemasukan', 'totalPengeluaran', 'totalSaldo', 'from', 'to'));
     }
 
     public function pemasukan(Request $request)
     {
         $currentLocationId = session('current_location_id');
         $pemasukan = Transaksi::where('jenis', 'Pemasukan')->where('id_lokasi', $currentLocationId)->with('lokasiKos');
-        if ($request->has('from') && $request->from != '') {
-            $pemasukan->whereDate('tanggal', '>=', $request->from . '-01'); // Start of the month
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
+        $from = $request->input('from', $currentMonth);
+        $to = $request->input('to', $currentMonth);
+
+        if ($from != '') {
+            $startDate = Carbon::createFromFormat('Y-m', $from)->startOfMonth()->toDateString();
+            $pemasukan->whereDate('tanggal', '>=', $startDate);
         }
-        if ($request->has('to') && $request->to != '') {
-            $pemasukan->whereDate('tanggal', '<=', $request->to . '-31'); // End of the month
+        if ($to != '') {
+            $endDate = Carbon::createFromFormat('Y-m', $to)->endOfMonth()->toDateString();
+            $pemasukan->whereDate('tanggal', '<=', $endDate);
         }
         $pemasukan = $pemasukan->get();
         $totalPemasukan = $pemasukan->sum('nominal');
-        return view('transaksi.pemasukan', compact('pemasukan', 'totalPemasukan'));
+        return view('transaksi.pemasukan', compact('pemasukan', 'totalPemasukan', 'from', 'to'));
     }
 
     public function pengeluaran(Request $request)
     {
         $currentLocationId = session('current_location_id');
         $pengeluaran = Transaksi::where('jenis', 'Pengeluaran')->where('id_lokasi', $currentLocationId)->with('lokasiKos');
-        if ($request->has('from') && $request->from != '') {
-            $pengeluaran->whereDate('tanggal', '>=', $request->from . '-01'); // Start of the month
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
+        $from = $request->input('from', $currentMonth);
+        $to = $request->input('to', $currentMonth);
+
+        if ($from != '') {
+            $startDate = Carbon::createFromFormat('Y-m', $from)->startOfMonth()->toDateString();
+            $pengeluaran->whereDate('tanggal', '>=', $startDate);
         }
-        if ($request->has('to') && $request->to != '') {
-            $pengeluaran->whereDate('tanggal', '<=', $request->to . '-31'); // End of the month
+        if ($to != '') {
+            $endDate = Carbon::createFromFormat('Y-m', $to)->endOfMonth()->toDateString();
+            $pengeluaran->whereDate('tanggal', '<=', $endDate);
         }
         $pengeluaran = $pengeluaran->get();
         $totalPengeluaran = $pengeluaran->sum('nominal');
-        return view('transaksi.pengeluaran', compact('pengeluaran', 'totalPengeluaran'));
+        return view('transaksi.pengeluaran', compact('pengeluaran', 'totalPengeluaran', 'from', 'to'));
     }
 
     public function store(Request $request)
@@ -146,40 +170,74 @@ class TransaksiController extends Controller
     {
         $currentLocationId = session('current_location_id');
         $transaksi = Transaksi::where('id_lokasi', $currentLocationId)->with('lokasiKos');
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
+        $from = $request->input('from', $currentMonth);
+        $to = $request->input('to', $currentMonth);
 
-        if ($request->has('from') && $request->from != '') {
-            $transaksi->whereDate('tanggal', '>=', $request->from . '-01');
+        if ($from != '') {
+            $startDate = Carbon::createFromFormat('Y-m', $from)->startOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '>=', $startDate);
         }
-        if ($request->has('to') && $request->to != '') {
-            $transaksi->whereDate('tanggal', '<=', $request->to . '-31');
+        if ($to != '') {
+            $endDate = Carbon::createFromFormat('Y-m', $to)->endOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '<=', $endDate);
         }
-        $transaksi = $transaksi->with('lokasiKos')->get();
+        $transaksi = $transaksi->get();
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'Lokasi Kos');
-        $sheet->setCellValue('C1', 'Jenis');
-        $sheet->setCellValue('D1', 'Sumber');
-        $sheet->setCellValue('E1', 'Nominal');
-        $sheet->setCellValue('F1', 'Tanggal');
-        $sheet->setCellValue('G1', 'Keterangan');
+        $headers = [
+            'No',
+            'Lokasi Kos',
+            'Jenis',
+            'Sumber',
+            'Nominal',
+            'Tanggal',
+            'Keterangan'
+        ];
+        $sheet->fromArray($headers, null, 'A1');
 
         $row = 2;
         foreach ($transaksi as $item) {
             $sheet->setCellValue('A' . $row, $row - 1);
-            $sheet->setCellValue('B' . $row, $item->lokasiKos->nama);
+            $sheet->setCellValue('B' . $row, optional($item->lokasiKos)->nama_kos ?? 'N/A');
             $sheet->setCellValue('C' . $row, $item->jenis);
             $sheet->setCellValue('D' . $row, $item->sumber);
-            $sheet->setCellValue('E' . $row, $item->nominal);
+            $sheet->setCellValue('E' . $row, 'Rp ' . number_format($item->nominal, 2, ',', '.'));
             $sheet->setCellValue('F' . $row, $item->tanggal);
             $sheet->setCellValue('G' . $row, $item->keterangan);
             $row++;
         }
 
+        $sheet->getColumnDimension('A')->setWidth(5);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(15);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->getColumnDimension('F')->setWidth(15);
+        $sheet->getColumnDimension('G')->setWidth(30);
+
+        $sheet->getStyle('A1:G' . ($row - 1))->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:G1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['argb' => 'FF000000'],
+                ],
+            ],
+        ];
+        $sheet->getStyle('A1:G' . ($row - 1))->applyFromArray($styleArray);
+
+        $sheet->getStyle('A1:G1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:G1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF4472C4');
+        $sheet->getStyle('A1:G1')->getFont()->getColor()->setARGB('FFFFFFFF');
+
         $writer = new Xlsx($spreadsheet);
-        $response = new StreamedResponse(function() use ($writer) {
+        $response = new StreamedResponse(function () use ($writer) {
             $writer->save('php://output');
         });
 
@@ -194,11 +252,18 @@ class TransaksiController extends Controller
     {
         $currentLocationId = session('current_location_id', 1);
         $transaksi = Transaksi::where('id_lokasi', $currentLocationId)->with('lokasiKos');
-        if ($request->has('from') && $request->from != '') {
-            $transaksi->whereDate('tanggal', '>=', $request->from . '-01');
+        $now = Carbon::now();
+        $currentMonth = $now->format('Y-m');
+        $from = $request->input('from', $currentMonth);
+        $to = $request->input('to', $currentMonth);
+
+        if ($from != '') {
+            $startDate = Carbon::createFromFormat('Y-m', $from)->startOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '>=', $startDate);
         }
-        if ($request->has('to') && $request->to != '') {
-            $transaksi->whereDate('tanggal', '<=', $request->to . '-31');
+        if ($to != '') {
+            $endDate = Carbon::createFromFormat('Y-m', $to)->endOfMonth()->toDateString();
+            $transaksi->whereDate('tanggal', '<=', $endDate);
         }
         $transaksi = $transaksi->with('lokasiKos')->get();
         $totalPemasukan = $transaksi->where('jenis', 'Pemasukan')->sum('nominal');

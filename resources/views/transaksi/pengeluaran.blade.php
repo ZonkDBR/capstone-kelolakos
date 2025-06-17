@@ -29,11 +29,11 @@
                                 <form action="{{ route('transaksi.pengeluaran') }}" method="GET" class="form-inline">
                                     <div class="form-group mr-2">
                                         <label for="from">Dari:</label>
-                                        <input type="month" name="from" id="from" class="form-control" value="{{ request('from') }}">
+                                        <input type="month" name="from" id="from" class="form-control" value="{{ request('from', $from) }}">
                                     </div>
                                     <div class="form-group mr-2">
                                         <label for="to">Sampai:</label>
-                                        <input type="month" name="to" id="to" class="form-control" value="{{ request('to') }}">
+                                        <input type="month" name="to" id="to" class="form-control" value="{{ request('to', $to) }}">
                                     </div>
                                     <button type="submit" class="btn btn-primary">Filter</button>
                                 </form>
